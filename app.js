@@ -69,16 +69,40 @@ let chapterId=parseInt(document.getElementById("chapterSelect").value)
 
 excelRows.forEach(row=>{
 
+// Validate row
+if(!row.pgn || !row.title){
+console.log("Skipping row (missing title or pgn):",row)
+return
+}
+
 let title=row.title
-let pgn=row.pgn
+let pgn=row.pgn.trim()
 
 let chess=new Chess()
 
-chess.loadPgn(pgn)
+try{
+
+let loaded=chess.loadPgn(pgn)
+
+if(!loaded){
+console.log("Invalid PGN:",pgn)
+return
+}
+
+}catch(err){
+
+console.log("PGN error:",pgn)
+return
+
+}
 
 let headers=chess.header()
-
 let fen=headers.FEN
+
+if(!fen){
+console.log("FEN missing in PGN:",pgn)
+return
+}
 
 let movesSAN=chess.history()
 
@@ -90,6 +114,8 @@ let moves=[]
 movesSAN.forEach((m,i)=>{
 
 let move=chess.move(m)
+
+if(!move) return
 
 moves.push({
 ply:i+1,
@@ -136,7 +162,6 @@ addRow(trainerRow)
 })
 
 }
-
 function addRow(row){
 
 let tbody=document.querySelector("#resultTable tbody")
