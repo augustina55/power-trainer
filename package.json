@@ -1,5 +1,4 @@
 {
-  "name": "pgn-power-trainer",
-  "version": "1.0.0",
-  "private": true
+"name":"power-trainer",
+"version":"1.0.0"
 }
