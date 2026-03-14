@@ -32,7 +32,7 @@ const chapters=[
 ]
 
 
-/* populate chapter dropdown */
+/* chapter dropdown */
 
 let chapterSelect=document.getElementById("chapterSelect")
 
@@ -46,8 +46,7 @@ chapterSelect.appendChild(option)
 })
 
 
-
-/* READ EXCEL */
+/* read excel */
 
 document.getElementById("excelInput").addEventListener("change",e=>{
 
@@ -72,7 +71,6 @@ alert(excelRows.length+" puzzles loaded")
 reader.readAsArrayBuffer(file)
 
 })
-
 
 
 document.getElementById("generateBtn").addEventListener("click",createTrainer)
@@ -107,7 +105,6 @@ chess.loadPgn(pgn)
 return
 }
 
-
 let headers=chess.header()
 
 let fen=headers.FEN
@@ -115,7 +112,7 @@ let fen=headers.FEN
 if(!fen)return
 
 
-/* FORCE FEN MOVE NUMBER 1 */
+/* FORCE FEN 0 1 */
 
 let fenParts=fen.split(" ")
 
@@ -133,19 +130,18 @@ fen=fenParts.join(" ")
 let movesSAN=chess.history()
 
 chess.reset()
-
 chess.load(fen)
 
 
 let moves=[]
 
-movesSAN.forEach((m,i)=>{
+if(movesSAN.length>0){
 
-let move=chess.move(m)
+let move=chess.move(movesSAN[0])
 
 moves.push({
 
-ply:i+1,
+ply:1,
 hint:null,
 move:move.from+move.to,
 arrows:[],
@@ -156,7 +152,7 @@ highlighted_squares:[]
 
 })
 
-})
+}
 
 
 let moveJSON=JSON.stringify(moves)
