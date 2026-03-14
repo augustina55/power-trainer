@@ -1,87 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
+
 <title>Power Trainer Generator</title>
 
-<style>
+<link rel="stylesheet" href="style.css">
 
-body{
-font-family:Arial;
-padding:20px;
-}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-button{
-padding:10px;
-margin-top:10px;
-}
-
-table{
-border-collapse:collapse;
-margin-top:20px;
-width:100%;
-}
-
-th,td{
-border:1px solid #ccc;
-padding:6px;
-font-size:12px;
-}
-
-</style>
+<script src="https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.6/dist/chess.js"></script>
 
 </head>
 
 <body>
 
-<h2>Power Trainer Generator</h2>
+<div class="container">
 
-<label>Upload Excel (title,pgn)</label>
-<br>
+<h1>♟ Power Trainer Generator</h1>
+
+<div class="controls">
+
 <input type="file" id="excelFile">
 
-<br><br>
-
-<label>Puzzle Type</label>
-
 <select id="puzzleType">
-<option value="single_variant">single_variant</option>
-<option value="mcq">mcq</option>
+<option value="single_variant">Single Variant</option>
+<option value="mcq">MCQ</option>
 </select>
-
-<br><br>
-
-<label>Chapter</label>
 
 <select id="chapterSelect"></select>
 
-<br><br>
+<button onclick="generateRows()">Create Power Trainer</button>
 
-<button id="generateBtn">Generate Trainer Rows</button>
-<button id="downloadBtn">Download Excel</button>
+<button onclick="downloadExcel()">Download Excel</button>
+
+</div>
 
 <table id="resultTable">
 
 <thead>
 
 <tr>
-<th>id</th>
-<th>title</th>
-<th>fen</th>
-<th>puzzle_type</th>
-<th>config</th>
-<th>custom_pieces</th>
-<th>moves</th>
-<th>arrows</th>
-<th>highlighted_squares</th>
-<th>board_disable</th>
-<th>points</th>
-<th>position_order</th>
-<th>created_at</th>
-<th>updated_at</th>
-<th>chapter_id</th>
-<th>unlock_after_page_id</th>
-<th>top_level_hint</th>
+
+<th>ID</th>
+<th>Title</th>
+<th>FEN</th>
+<th>Puzzle Type</th>
+<th>Moves</th>
+<th>Chapter</th>
+
 </tr>
 
 </thead>
@@ -90,7 +56,9 @@ font-size:12px;
 
 </table>
 
-<script type="module" src="app.js"></script>
+</div>
+
+<script src="app.js"></script>
 
 </body>
 </html>
