@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>PGN → Power Trainer</title>
+<title>Power Trainer Generator</title>
 
 <style>
 
@@ -11,15 +11,9 @@ font-family:Arial;
 padding:20px;
 }
 
-textarea{
-width:100%;
-height:160px;
-}
-
 button{
-padding:10px 18px;
+padding:10px;
 margin-top:10px;
-cursor:pointer;
 }
 
 table{
@@ -40,17 +34,30 @@ font-size:12px;
 
 <body>
 
-<h2>PGN → Power Trainer</h2>
+<h2>Power Trainer Generator</h2>
 
-<input type="file" id="fileInput">
+<label>Upload Excel (title,pgn)</label>
+<br>
+<input type="file" id="excelFile">
 
 <br><br>
 
-<textarea id="pgnInput" placeholder="Paste PGN"></textarea>
+<label>Puzzle Type</label>
 
-<br>
+<select id="puzzleType">
+<option value="single_variant">single_variant</option>
+<option value="mcq">mcq</option>
+</select>
 
-<button id="generateBtn">Create Power Trainer</button>
+<br><br>
+
+<label>Chapter</label>
+
+<select id="chapterSelect"></select>
+
+<br><br>
+
+<button id="generateBtn">Generate Trainer Rows</button>
 <button id="downloadBtn">Download Excel</button>
 
 <table id="resultTable">
