@@ -115,6 +115,21 @@ let fen=headers.FEN
 if(!fen)return
 
 
+/* FORCE FEN MOVE NUMBER 1 */
+
+let fenParts=fen.split(" ")
+
+while(fenParts.length<6){
+fenParts.push("0")
+}
+
+fenParts[4]="0"
+fenParts[5]="1"
+
+fen=fenParts.join(" ")
+
+
+
 let movesSAN=chess.history()
 
 chess.reset()
