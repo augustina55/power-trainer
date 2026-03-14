@@ -1,11 +1,9 @@
-import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.0.0/dist/esm/chess.js";
-import * as XLSX from "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm";
-
-let tableData=[]
 let excelRows=[]
-let idCounter=351
+let tableData=[]
+let idCounter=1
 
 const chapters=[
+
 { id:270,title:"Test"},
 { id:317,title:"The chessboard"},
 { id:324,title:"Meet the Bishop"},
@@ -26,16 +24,24 @@ const chapters=[
 { id:351,title:"Assisted checkmate basics"},
 { id:342,title:"checkmate with a queen"},
 { id:343,title:"Ladder Checkmate"}
+
 ]
 
-const chapterSelect=document.getElementById("chapterSelect")
+/* populate chapter dropdown */
+
+let chapterSelect=document.getElementById("chapterSelect")
 
 chapters.forEach(c=>{
+
 let option=document.createElement("option")
 option.value=c.id
 option.textContent=c.title
+
 chapterSelect.appendChild(option)
+
 })
+
+/* read excel */
 
 document.getElementById("excelFile").addEventListener("change",function(e){
 
@@ -59,65 +65,62 @@ reader.readAsArrayBuffer(file)
 
 })
 
-document.getElementById("generateBtn").addEventListener("click",generateRows)
-document.getElementById("downloadBtn").addEventListener("click",downloadExcel)
+/* generate trainer rows */
 
 function generateRows(){
+
+tableData=[]
 
 let puzzleType=document.getElementById("puzzleType").value
 let chapterId=parseInt(document.getElementById("chapterSelect").value)
 
 excelRows.forEach(row=>{
 
-// Validate row
-if(!row.pgn || !row.title){
-console.log("Skipping row (missing title or pgn):",row)
-return
-}
+let title=row.title||row.Title
+let pgn=row.pgn||row["PGN Text"]
 
-let title=row.title
-let pgn=row.pgn.trim()
+if(!title||!pgn)return
+
+pgn=pgn.trim()
+
+/* extract FEN */
+
+let fenMatch=pgn.match(/\[FEN\s+"([^"]+)"\]/)
+
+if(!fenMatch)return
+
+let fen=fenMatch[1]
+
+let fenParts=fen.split(" ")
+fenParts[4]="0"
+fenParts[5]="1"
+fen=fenParts.join(" ")
+
+/* extract moves */
+
+let movesSection=pgn.split("\n\n").pop()
+
+movesSection=movesSection.replace(/\{[^}]*\}/g,"")
+movesSection=movesSection.replace(/\[%[^\]]*\]/g,"")
+movesSection=movesSection.replace(/1-0|0-1|1\/2-1\/2|\*/g,"")
+movesSection=movesSection.replace(/\d+\.+/g,"")
+
+let sanMoves=movesSection.trim().split(/\s+/)
 
 let chess=new Chess()
 
-try{
-
-let loaded=chess.loadPgn(pgn)
-
-if(!loaded){
-console.log("Invalid PGN:",pgn)
-return
-}
-
-}catch(err){
-
-console.log("PGN error:",pgn)
-return
-
-}
-
-let headers=chess.header()
-let fen=headers.FEN
-
-if(!fen){
-console.log("FEN missing in PGN:",pgn)
-return
-}
-
-let movesSAN=chess.history()
-
-chess.reset()
 chess.load(fen)
 
 let moves=[]
 
-movesSAN.forEach((m,i)=>{
+sanMoves.forEach((m,i)=>{
 
 let move=chess.move(m)
 
-if(!move) return
+if(!move)return
 
 moves.push({
+
 ply:i+1,
 hint:null,
 move:move.from+move.to,
@@ -126,6 +129,7 @@ comment:"",
 variations:[],
 annotations:[],
 highlighted_squares:[]
+
 })
 
 })
@@ -134,7 +138,7 @@ let moveJSON=JSON.stringify(moves)
 
 let now=new Date().toISOString()
 
-let trainerRow={
+let rowData={
 
 id:idCounter++,
 title:title,
@@ -156,29 +160,38 @@ top_level_hint:null
 
 }
 
-tableData.push(trainerRow)
-addRow(trainerRow)
+tableData.push(rowData)
+
+addRow(rowData)
 
 })
 
 }
-function addRow(row){
 
-let tbody=document.querySelector("#resultTable tbody")
+/* add table row */
+
+function addRow(data){
+
+let table=document.querySelector("#resultTable tbody")
 
 let tr=document.createElement("tr")
 
-Object.values(row).forEach(v=>{
+tr.innerHTML=`
 
-let td=document.createElement("td")
-td.textContent=v
-tr.appendChild(td)
+<td>${data.id}</td>
+<td>${data.title}</td>
+<td>${data.fen}</td>
+<td>${data.puzzle_type}</td>
+<td>${data.moves}</td>
+<td>${data.chapter_id}</td>
 
-})
+`
 
-tbody.appendChild(tr)
+table.appendChild(tr)
 
 }
+
+/* download excel */
 
 function downloadExcel(){
 
@@ -188,6 +201,6 @@ let wb=XLSX.utils.book_new()
 
 XLSX.utils.book_append_sheet(wb,ws,"trainer")
 
-XLSX.writeFile(wb,"power_trainer_output.xlsx")
+XLSX.writeFile(wb,"power_trainer.xlsx")
 
 }
