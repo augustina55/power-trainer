@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PGN → Power Trainer</title>
+
+<style>
+
+body{
+font-family:Arial;
+padding:20px;
+}
+
+textarea{
+width:100%;
+height:160px;
+}
+
+button{
+padding:10px 18px;
+margin-top:10px;
+cursor:pointer;
+}
+
+table{
+border-collapse:collapse;
+margin-top:20px;
+width:100%;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:6px;
+font-size:12px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>PGN → Power Trainer</h2>
+
+<input type="file" id="fileInput">
+
+<br><br>
+
+<textarea id="pgnInput" placeholder="Paste PGN"></textarea>
+
+<br>
+
+<button id="generateBtn">Create Power Trainer</button>
+<button id="downloadBtn">Download Excel</button>
+
+<table id="resultTable">
+
+<thead>
+
+<tr>
+<th>id</th>
+<th>title</th>
+<th>fen</th>
+<th>puzzle_type</th>
+<th>config</th>
+<th>custom_pieces</th>
+<th>moves</th>
+<th>arrows</th>
+<th>highlighted_squares</th>
+<th>board_disable</th>
+<th>points</th>
+<th>position_order</th>
+<th>created_at</th>
+<th>updated_at</th>
+<th>chapter_id</th>
+<th>unlock_after_page_id</th>
+<th>top_level_hint</th>
+</tr>
+
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
