@@ -1,83 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<title>Power Trainer Generator</title>
-
 <meta charset="UTF-8">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
+<title>PGN → Power Trainer</title>
 
 <style>
 
 body{
-font-family:Arial, Helvetica, sans-serif;
-background:#f4f6fb;
-margin:0;
-padding:0;
+font-family:Arial;
+padding:20px;
 }
 
-.container{
-width:95%;
-margin:auto;
-margin-top:30px;
-}
-
-h1{
-text-align:center;
-margin-bottom:25px;
-}
-
-.controls{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-margin-bottom:20px;
-background:white;
-padding:15px;
-border-radius:8px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-
-input,select,button{
-padding:10px;
-border-radius:6px;
-border:1px solid #ccc;
-font-size:14px;
+textarea{
+width:100%;
+height:160px;
 }
 
 button{
-background:#2d7ff9;
-color:white;
-border:none;
+padding:10px 18px;
+margin-top:10px;
 cursor:pointer;
 }
 
-button:hover{
-background:#1b5fd1;
+select,input{
+padding:6px;
+margin-right:10px;
 }
 
 table{
-width:100%;
 border-collapse:collapse;
-background:white;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
+margin-top:20px;
+width:100%;
 }
 
 th,td{
-padding:8px;
-border:1px solid #ddd;
-font-size:13px;
-}
-
-th{
-background:#2d7ff9;
-color:white;
-}
-
-tbody tr:nth-child(even){
-background:#f2f4f9;
+border:1px solid #ccc;
+padding:6px;
+font-size:12px;
 }
 
 </style>
@@ -86,253 +45,58 @@ background:#f2f4f9;
 
 <body>
 
-<div class="container">
+<h2>PGN → Power Trainer</h2>
 
-<h1>♟ Power Trainer Generator</h1>
+Excel File:
+<input type="file" id="excelInput">
 
-<div class="controls">
+<br><br>
 
-<input type="file" id="excelFile">
-
+Puzzle Type:
 <select id="puzzleType">
-<option value="single_variant">Single Variant</option>
-<option value="mcq">MCQ</option>
+<option value="single_variant">single_variant</option>
+<option value="mcq">mcq</option>
 </select>
 
+Chapter:
 <select id="chapterSelect"></select>
 
-<button onclick="generateRows()">Create Power Trainer</button>
+<br><br>
 
-<button onclick="downloadExcel()">Download Excel</button>
-
-</div>
+<button id="generateBtn">Create Power Trainer</button>
+<button id="downloadBtn">Download Excel</button>
 
 <table id="resultTable">
 
 <thead>
+
 <tr>
-<th>ID</th>
-<th>Title</th>
-<th>FEN</th>
-<th>Puzzle Type</th>
-<th>Moves</th>
-<th>Chapter</th>
+<th>id</th>
+<th>title</th>
+<th>fen</th>
+<th>puzzle_type</th>
+<th>config</th>
+<th>custom_pieces</th>
+<th>moves</th>
+<th>arrows</th>
+<th>highlighted_squares</th>
+<th>board_disable</th>
+<th>points</th>
+<th>position_order</th>
+<th>created_at</th>
+<th>updated_at</th>
+<th>chapter_id</th>
+<th>unlock_after_page_id</th>
+<th>top_level_hint</th>
 </tr>
+
 </thead>
 
 <tbody></tbody>
 
 </table>
 
-</div>
-
-<script>
-
-let excelRows=[]
-let tableData=[]
-let idCounter=1
-
-const chapters=[
-
-{ id:270,title:"Test"},
-{ id:317,title:"The chessboard"},
-{ id:324,title:"Meet the Bishop"},
-{ id:325,title:"Meet the queen"},
-{ id:326,title:"Meet the king"},
-{ id:331,title:"Meet the pawn"},
-{ id:336,title:"Understanding Check"},
-{ id:337,title:"How to Get Out of Check"},
-{ id:323,title:"Meet the Rook"},
-{ id:338,title:"Checkmate"},
-{ id:339,title:"Stalemate"},
-{ id:353,title:"Ladder Rook Checkmate"},
-{ id:333,title:"Understanding the attack"},
-{ id:334,title:"Understanding defense"},
-{ id:335,title:"Captures in chess"},
-{ id:341,title:"Checkmate in one move"},
-{ id:344,title:"Castling"},
-{ id:351,title:"Assisted checkmate basics"},
-{ id:342,title:"checkmate with a queen"},
-{ id:343,title:"Ladder Checkmate"}
-
-]
-
-/* populate chapters */
-
-let chapterSelect=document.getElementById("chapterSelect")
-
-chapters.forEach(c=>{
-
-let option=document.createElement("option")
-option.value=c.id
-option.textContent=c.title
-
-chapterSelect.appendChild(option)
-
-})
-
-/* read excel */
-
-document.getElementById("excelFile").addEventListener("change",function(e){
-
-let file=e.target.files[0]
-
-let reader=new FileReader()
-
-reader.onload=function(evt){
-
-let data=new Uint8Array(evt.target.result)
-
-let workbook=XLSX.read(data,{type:"array"})
-
-let sheet=workbook.Sheets[workbook.SheetNames[0]]
-
-excelRows=XLSX.utils.sheet_to_json(sheet)
-
-alert(excelRows.length+" rows loaded")
-
-}
-
-reader.readAsArrayBuffer(file)
-
-})
-
-function generateRows(){
-
-tableData=[]
-document.querySelector("#resultTable tbody").innerHTML=""
-
-let puzzleType=document.getElementById("puzzleType").value
-let chapterId=parseInt(document.getElementById("chapterSelect").value)
-
-excelRows.forEach(row=>{
-
-let title=row.title || row.Title
-let pgn=row.pgn || row["PGN Text"]
-
-if(!title || !pgn) return
-
-pgn=pgn.trim()
-
-/* extract FEN */
-
-let fenMatch=pgn.match(/\[FEN\s+"([^"]+)"\]/)
-
-if(!fenMatch) return
-
-let fen=fenMatch[1]
-
-let fenParts=fen.split(" ")
-fenParts[4]="0"
-fenParts[5]="1"
-fen=fenParts.join(" ")
-
-/* extract moves */
-
-let movesSection=pgn.split("\n\n").pop()
-
-movesSection=movesSection.replace(/\{[^}]*\}/g,"")
-movesSection=movesSection.replace(/\[%[^\]]*\]/g,"")
-movesSection=movesSection.replace(/1-0|0-1|1\/2-1\/2|\*/g,"")
-movesSection=movesSection.replace(/\d+\.+/g,"")
-
-let sanMoves=movesSection.trim().split(/\s+/)
-
-let chess=new Chess()
-
-chess.load(fen)
-
-let moves=[]
-
-sanMoves.forEach((m,i)=>{
-
-let move=chess.move(m)
-
-if(!move) return
-
-moves.push({
-
-ply:i+1,
-hint:null,
-move:move.from+move.to,
-arrows:[],
-comment:"",
-variations:[],
-annotations:[],
-highlighted_squares:[]
-
-})
-
-})
-
-let moveJSON=JSON.stringify(moves)
-
-let now=new Date().toISOString()
-
-let rowData={
-
-id:idCounter++,
-title:title,
-fen:fen,
-puzzle_type:puzzleType,
-config:"{}",
-custom_pieces:null,
-moves:moveJSON,
-arrows:null,
-highlighted_squares:null,
-board_disable:false,
-points:0,
-position_order:1,
-created_at:now,
-updated_at:now,
-chapter_id:chapterId,
-unlock_after_page_id:null,
-top_level_hint:null
-
-}
-
-tableData.push(rowData)
-
-addRow(rowData)
-
-})
-
-}
-
-function addRow(data){
-
-let table=document.querySelector("#resultTable tbody")
-
-let tr=document.createElement("tr")
-
-tr.innerHTML=`
-
-<td>${data.id}</td>
-<td>${data.title}</td>
-<td>${data.fen}</td>
-<td>${data.puzzle_type}</td>
-<td style="max-width:300px;word-break:break-all">${data.moves}</td>
-<td>${data.chapter_id}</td>
-
-`
-
-table.appendChild(tr)
-
-}
-
-function downloadExcel(){
-
-let ws=XLSX.utils.json_to_sheet(tableData)
-
-let wb=XLSX.utils.book_new()
-
-XLSX.utils.book_append_sheet(wb,ws,"trainer")
-
-XLSX.writeFile(wb,"power_trainer.xlsx")
-
-}
-
-</script>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
