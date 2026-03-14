@@ -3,7 +3,7 @@ import * as XLSX from "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm";
 
 let tableData=[]
 let excelRows=[]
-let idCounter=351
+let idCounter=0
 
 
 const chapters=[
@@ -46,6 +46,7 @@ chapterSelect.appendChild(option)
 })
 
 
+
 /* READ EXCEL */
 
 document.getElementById("excelInput").addEventListener("change",e=>{
@@ -73,6 +74,7 @@ reader.readAsArrayBuffer(file)
 })
 
 
+
 document.getElementById("generateBtn").addEventListener("click",createTrainer)
 document.getElementById("downloadBtn").addEventListener("click",downloadExcel)
 
@@ -80,8 +82,14 @@ document.getElementById("downloadBtn").addEventListener("click",downloadExcel)
 
 function createTrainer(){
 
+tableData=[]
+document.querySelector("#resultTable tbody").innerHTML=""
+
+idCounter=parseInt(document.getElementById("startId").value)||1
+
 let puzzleType=document.getElementById("puzzleType").value
 let chapterId=parseInt(document.getElementById("chapterSelect").value)
+
 
 excelRows.forEach(row=>{
 
@@ -90,6 +98,7 @@ let pgn=row["PGN Text"]||row.pgn
 
 if(!pgn)return
 
+
 let chess=new Chess()
 
 try{
@@ -97,6 +106,7 @@ chess.loadPgn(pgn)
 }catch{
 return
 }
+
 
 let headers=chess.header()
 
@@ -110,6 +120,7 @@ let movesSAN=chess.history()
 chess.reset()
 
 chess.load(fen)
+
 
 let moves=[]
 
