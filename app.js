@@ -32,7 +32,7 @@ const chapters=[
 ]
 
 
-/* chapter dropdown */
+/* populate chapter dropdown */
 
 let chapterSelect=document.getElementById("chapterSelect")
 
@@ -105,6 +105,7 @@ chess.loadPgn(pgn)
 return
 }
 
+
 let headers=chess.header()
 
 let fen=headers.FEN
@@ -112,7 +113,7 @@ let fen=headers.FEN
 if(!fen)return
 
 
-/* FORCE FEN 0 1 */
+/* FORCE FEN TO 0 1 */
 
 let fenParts=fen.split(" ")
 
@@ -126,12 +127,17 @@ fenParts[5]="1"
 fen=fenParts.join(" ")
 
 
+/* detect side to move */
+
+let side=fenParts[1]
+
+let plyValue = side==="b" ? 2 : 1
+
 
 let movesSAN=chess.history()
 
 chess.reset()
 chess.load(fen)
-
 
 let moves=[]
 
@@ -141,7 +147,7 @@ let move=chess.move(movesSAN[0])
 
 moves.push({
 
-ply:1,
+ply:plyValue,
 hint:null,
 move:move.from+move.to,
 arrows:[],
