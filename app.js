@@ -58,6 +58,12 @@ reader.readAsArrayBuffer(file);
 document.getElementById("generateBtn").addEventListener("click",createTrainer);
 document.getElementById("downloadBtn").addEventListener("click",downloadExcel);
 
+function extractTitleFromPGN(pgn){
+/* extract first {comment} before moves */
+let match = pgn.match(/\{([^}]*)\}/);
+return match ? match[1].trim() : null;
+}
+
 function createTrainer(){
 
 tableData=[];
@@ -67,14 +73,25 @@ idCounter=parseInt(document.getElementById("startId").value)||1;
 
 let puzzleType=document.getElementById("puzzleType").value;
 let chapterId=parseInt(document.getElementById("chapterSelect").value);
+let usePgnTitle=document.getElementById("usePgnTitle").checked;
 
 excelRows.forEach(row=>{
 
-let title = row.Title || row.title;
+let excelTitle = row.Title || row.title;
 let pgn = row["PGN Text"] || row.pgn;
 let topLevelHint = row.top_level_hint || row["top_level_hint"] || null;
 
 if(!pgn) return;
+
+/* NEW TITLE LOGIC */
+let title = excelTitle;
+
+if(usePgnTitle){
+let pgnTitle = extractTitleFromPGN(pgn);
+if(pgnTitle){
+title = pgnTitle;
+}
+}
 
 let chess=new Chess();
 
