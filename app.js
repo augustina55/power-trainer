@@ -1,13 +1,11 @@
 import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.0.0/dist/esm/chess.js";
 import * as XLSX from "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm";
 
-let tableData=[]
-let excelRows=[]
-let idCounter=0
+let tableData = [];
+let excelRows = [];
+let idCounter = 0;
 
-
-const chapters=[
-
+const chapters = [
 { id:270,title:"Test"},
 { id:317,title:"The chessboard"},
 { id:324,title:"Meet the Bishop"},
@@ -28,125 +26,97 @@ const chapters=[
 { id:351,title:"Assisted checkmate basics"},
 { id:342,title:"checkmate with a queen"},
 { id:343,title:"Ladder Checkmate"}
-
-]
-
+];
 
 /* populate chapter dropdown */
-
-let chapterSelect=document.getElementById("chapterSelect")
+let chapterSelect = document.getElementById("chapterSelect");
 
 chapters.forEach(c=>{
-
-let option=document.createElement("option")
-option.value=c.id
-option.textContent=c.title
-chapterSelect.appendChild(option)
-
-})
-
+let option=document.createElement("option");
+option.value=c.id;
+option.textContent=c.title;
+chapterSelect.appendChild(option);
+});
 
 /* read excel */
-
 document.getElementById("excelInput").addEventListener("change",e=>{
-
-let file=e.target.files[0]
-
-let reader=new FileReader()
+let file=e.target.files[0];
+let reader=new FileReader();
 
 reader.onload=ev=>{
+let data=new Uint8Array(ev.target.result);
+let workbook=XLSX.read(data,{type:"array"});
+let sheet=workbook.Sheets[workbook.SheetNames[0]];
+excelRows=XLSX.utils.sheet_to_json(sheet);
 
-let data=new Uint8Array(ev.target.result)
+alert(excelRows.length+" puzzles loaded");
+};
 
-let workbook=XLSX.read(data,{type:"array"})
+reader.readAsArrayBuffer(file);
+});
 
-let sheet=workbook.Sheets[workbook.SheetNames[0]]
-
-excelRows=XLSX.utils.sheet_to_json(sheet)
-
-alert(excelRows.length+" puzzles loaded")
-
-}
-
-reader.readAsArrayBuffer(file)
-
-})
-
-
-document.getElementById("generateBtn").addEventListener("click",createTrainer)
-document.getElementById("downloadBtn").addEventListener("click",downloadExcel)
-
-
+document.getElementById("generateBtn").addEventListener("click",createTrainer);
+document.getElementById("downloadBtn").addEventListener("click",downloadExcel);
 
 function createTrainer(){
 
-tableData=[]
-document.querySelector("#resultTable tbody").innerHTML=""
+tableData=[];
+document.querySelector("#resultTable tbody").innerHTML="";
 
-idCounter=parseInt(document.getElementById("startId").value)||1
+idCounter=parseInt(document.getElementById("startId").value)||1;
 
-let puzzleType=document.getElementById("puzzleType").value
-let chapterId=parseInt(document.getElementById("chapterSelect").value)
-
+let puzzleType=document.getElementById("puzzleType").value;
+let chapterId=parseInt(document.getElementById("chapterSelect").value);
 
 excelRows.forEach(row=>{
 
-let title=row.Title||row.title
-let pgn=row["PGN Text"]||row.pgn
+let title = row.Title || row.title;
+let pgn = row["PGN Text"] || row.pgn;
+let topLevelHint = row.top_level_hint || row["top_level_hint"] || null;
 
-if(!pgn)return
+if(!pgn) return;
 
-
-let chess=new Chess()
+let chess=new Chess();
 
 try{
-chess.loadPgn(pgn)
+chess.loadPgn(pgn);
 }catch{
-return
+return;
 }
 
+let headers=chess.header();
+let fen=headers.FEN;
 
-let headers=chess.header()
-
-let fen=headers.FEN
-
-if(!fen)return
-
+if(!fen) return;
 
 /* FORCE FEN TO 0 1 */
-
-let fenParts=fen.split(" ")
+let fenParts=fen.split(" ");
 
 while(fenParts.length<6){
-fenParts.push("0")
+fenParts.push("0");
 }
 
-fenParts[4]="0"
-fenParts[5]="1"
+fenParts[4]="0";
+fenParts[5]="1";
 
-fen=fenParts.join(" ")
-
+fen=fenParts.join(" ");
 
 /* detect side to move */
+let side=fenParts[1];
+let plyValue = side==="b" ? 2 : 1;
 
-let side=fenParts[1]
+let movesSAN=chess.history();
 
-let plyValue = side==="b" ? 2 : 1
+chess.reset();
+chess.load(fen);
 
-
-let movesSAN=chess.history()
-
-chess.reset()
-chess.load(fen)
-
-let moves=[]
+let moves=[];
 
 if(movesSAN.length>0){
 
-let move=chess.move(movesSAN[0])
+let move=chess.move(movesSAN[0]);
 
 moves.push({
-
 ply:plyValue,
 hint:null,
 move:move.from+move.to,
@@ -155,16 +125,12 @@ comment:"",
 variations:[],
 annotations:[],
 highlighted_squares:[]
-
-})
+});
 
 }
 
-
-let moveJSON=JSON.stringify(moves)
-
-let now=new Date().toISOString()
-
+let moveJSON=JSON.stringify(moves);
+let now=new Date().toISOString();
 
 let rowData={
 
@@ -184,49 +150,39 @@ created_at:now,
 updated_at:now,
 chapter_id:chapterId,
 unlock_after_page_id:null,
-top_level_hint:null
+top_level_hint: topLevelHint
+
+};
+
+tableData.push(rowData);
+addRow(rowData);
+
+});
 
 }
-
-
-tableData.push(rowData)
-
-addRow(rowData)
-
-})
-
-}
-
-
 
 function addRow(row){
 
-let tbody=document.querySelector("#resultTable tbody")
-
-let tr=document.createElement("tr")
+let tbody=document.querySelector("#resultTable tbody");
+let tr=document.createElement("tr");
 
 Object.values(row).forEach(val=>{
+let td=document.createElement("td");
+td.textContent=val;
+tr.appendChild(td);
+});
 
-let td=document.createElement("td")
-td.textContent=val
-tr.appendChild(td)
-
-})
-
-tbody.appendChild(tr)
+tbody.appendChild(tr);
 
 }
 
-
-
 function downloadExcel(){
 
-let ws=XLSX.utils.json_to_sheet(tableData)
+let ws=XLSX.utils.json_to_sheet(tableData);
+let wb=XLSX.utils.book_new();
 
-let wb=XLSX.utils.book_new()
+XLSX.utils.book_append_sheet(wb,ws,"puzzles");
 
-XLSX.utils.book_append_sheet(wb,ws,"puzzles")
-
-XLSX.writeFile(wb,"power_trainer.xlsx")
+XLSX.writeFile(wb,"power_trainer.xlsx");
 
 }
