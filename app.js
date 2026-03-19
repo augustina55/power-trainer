@@ -59,7 +59,6 @@ document.getElementById("generateBtn").addEventListener("click",createTrainer);
 document.getElementById("downloadBtn").addEventListener("click",downloadExcel);
 
 function extractTitleFromPGN(pgn){
-/* extract first {comment} before moves */
 let match = pgn.match(/\{([^}]*)\}/);
 return match ? match[1].trim() : null;
 }
@@ -77,13 +76,51 @@ let usePgnTitle=document.getElementById("usePgnTitle").checked;
 
 excelRows.forEach(row=>{
 
+let now=new Date().toISOString();
+
+/* ================= PLAY VS BOT ================= */
+if(puzzleType==="play_vs_bot"){
+
+let title = row.Title || row.title;
+let fen = row.FEN || row.fen;
+let topLevelHint = row.top_level_hint || row["top_level_hint"] || null;
+
+if(!fen) return;
+
+let rowData={
+id:idCounter++,
+title:title,
+fen:fen,
+puzzle_type:puzzleType,
+config:"{}",
+custom_pieces:null,
+moves:null,
+arrows:null,
+highlighted_squares:null,
+board_disable:false,
+points:0,
+position_order:1,
+created_at:now,
+updated_at:now,
+chapter_id:chapterId,
+unlock_after_page_id:null,
+top_level_hint: topLevelHint
+};
+
+tableData.push(rowData);
+addRow(rowData);
+return;
+}
+
+/* ================= NORMAL PGN FLOW ================= */
+
 let excelTitle = row.Title || row.title;
 let pgn = row["PGN Text"] || row.pgn;
 let topLevelHint = row.top_level_hint || row["top_level_hint"] || null;
 
 if(!pgn) return;
 
-/* NEW TITLE LOGIC */
+/* title logic */
 let title = excelTitle;
 
 if(usePgnTitle){
@@ -106,7 +143,7 @@ let fen=headers.FEN;
 
 if(!fen) return;
 
-/* FORCE FEN TO 0 1 */
+/* normalize fen */
 let fenParts=fen.split(" ");
 
 while(fenParts.length<6){
@@ -118,7 +155,7 @@ fenParts[5]="1";
 
 fen=fenParts.join(" ");
 
-/* detect side to move */
+/* detect side */
 let side=fenParts[1];
 let plyValue = side==="b" ? 2 : 1;
 
@@ -147,7 +184,6 @@ highlighted_squares:[]
 }
 
 let moveJSON=JSON.stringify(moves);
-let now=new Date().toISOString();
 
 let rowData={
 
