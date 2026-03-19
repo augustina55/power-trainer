@@ -17,6 +17,7 @@ const chapters = [
 { id:323,title:"Meet the Rook"},
 { id:338,title:"Checkmate"},
 { id:339,title:"Stalemate"},
+  { id:352,title:"Single queen checkmate"},
 { id:353,title:"Ladder Rook Checkmate"},
 { id:333,title:"Understanding the attack"},
 { id:334,title:"Understanding defense"},
